@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordinateur Djéhoutyen Cyclique Non-Binaire — Calculateur Officiel</title>
+<style>
+body { font-family: Arial, sans-serif; background:#0f1220; color:#eaeaf0; margin:0; padding:20px; line-height: 1.6; text-align: center;}
+h1 { color:#9bdcff; margin-bottom: 10px; letter-spacing: 1px; font-size: 2.2rem;}
+h2, h3 { color:#9bdcff; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;}
+.force-caps { text-transform: uppercase; }
+.main-wrapper { max-width: 1100px; margin: 0 auto; }
+.header-section { margin-bottom: 30px; }
+.creator-text { display: block; margin-top: 5px; font-weight: normal; font-size: 0.95rem; opacity: 0.9; }
+.container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; text-align: left; }
+.panel { background:#161a33; border-radius:12px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.3); flex: 1 1 450px; min-width: 320px; }
+.controls label { font-size: 0.85rem; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
+.controls input, .controls button { width: 100%; box-sizing: border-box; margin:8px 0; padding:12px; border-radius:8px; border:none; font-size: 1rem;}
+button { background:#4da3ff; color:#061226; font-weight:bold; cursor:pointer; transition: 0.3s; letter-spacing: 1px;}
+button:hover { background: #7cc1ff; }
+button.secondary { background:#8a8cff; }
+button.warn { background:#ff9b4d; }
+canvas { background:#0b0f25; border-radius:12px; width: 100%; height: auto; max-width: 400px; display: block; margin: 20px auto; border: 1px solid #26306a; }
+.log { max-height:200px; overflow:auto; background:#0b0f25; border-radius:8px; padding:10px; font-family: monospace; font-size: 0.9rem;}
+.badge { display:inline-block; padding:10px 20px; border-radius:999px; background:#26306a; margin: 5px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; min-width: 200px;}
+@media (max-width: 600px) {
+    .badge { width: 90%; min-width: unset; }
+    h1 { font-size: 1.8rem; } 
+    .panel { min-width: 280px; }
+}
+.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #26306a; opacity: 0.8; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<div class="main-wrapper">
+  <div class="header-section">
+    <h1>🌀 Ordinateur Djéhoutyen Cyclique Non-Binaire</h1>
+    <p>
+        <strong>Calculatrice Djehoutyenne © 2026</strong>
+        <span class="creator-text">Créée par Dodji Mahouignito Djehouty OLOU</span>
+    </p>
+    <div>
+      <span class="badge">Prototype logiciel</span>
+      <span class="badge">Calcul par déplacement</span>
+      <span class="badge">Trace exportable</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="panel">
+      <h2 class="force-caps">Calculateur cyclique</h2>
+      <div class="controls">
+        <label>N (Nombre d'états du cycle) :</label>
+        <input id="N" type="number" min="2" value="15">
+        <label>Expression (ex: 4+6, √16, 5*2, 2^5) :</label>
+        <input id="expr" type="text" placeholder="SAISISSEZ VOTRE CALCUL ICI..." onkeydown="if(event.key==='Enter') compute()">
+        <button class="force-caps" onclick="compute()">Calculer (cyclique)</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="secondary" onclick="store()">M+</button>
+          <button class="secondary" onclick="recall()">MR</button>
+        </div>
+        <button class="warn force-caps" onclick="clearLog()">Effacer la trace</button>
+      </div>
+      <h3>Résultat</h3>
+      <div id="result" style="font-size: 1.2rem; color: #ff9b4d; font-weight: bold;">—</div>
+      <h3>Trace du calcul</h3>
+      <div class="log" id="log"></div>
+      <button style="margin-top: 15px; background: #26306a; color: white;" onclick="exportLog()">Exporter la trace (.txt)</button>
+    </div>
+
+    <div class="panel" style="text-align: center;">
+      <h2 class="force-caps">Visualisation cyclique</h2>
+      <canvas id="canvas" width="400" height="400"></canvas>
+      <p><small>L'information est une position sur un cercle.<br><span class="force-caps">Calculer = déplacer le curseur.</span></small></p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© Ordinateur Djéhoutyen — Calcul non binaire cyclique. Ce logiciel illustre un paradigme de calcul par déplacement géométrique.</p>
+    <p>Licence : © 2026 Dodji Mahouignito Djehouty OLOU – Gratuit pour usage personnel et pédagogique, revente interdite.</p>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let cursor = 0;
+let memory = 0;
+
+function drawCycle(N, pos){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const r = 150;
+
+  ctx.strokeStyle = '#4da3ff';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  for(let i = 0; i < N; i++){
+    const a = (2 * Math.PI * i) / N - Math.PI / 2;
+    const x = cx + r * Math.cos(a);
+    const y = cy + r * Math.sin(a);
+    
+    if(i === pos) {
+        ctx.fillStyle = '#ff9b4d';
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    } else {
+        ctx.fillStyle = '#9bdcff';
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+  }
+}
+
+function evalExpr(expr){
+  let cleanExpr = expr.replace(/\^/g, '**').replace(/√|sqrt/g, 'Math.sqrt');
+  cleanExpr = cleanExpr.replace(/Math\.sqrt(\d+(\.\d+)?)/g, 'Math.sqrt($1)');
+  cleanExpr = cleanExpr.replace(/sin/g, 'Math.sin').replace(/cos/g, 'Math.cos').replace(/PI/g, 'Math.PI');
+  return Function('return ('+cleanExpr+')')();
+}
+
+function compute(){
+  const N_val = parseInt(document.getElementById('N').value);
+  const exprInput = document.getElementById('expr').value;
+  if(!exprInput) return;
+  let value;
+  try {
+    value = evalExpr(exprInput);
+  } catch(e) {
+    alert('Expression invalide.');
+    return;
+  }
+  cursor = ((Math.round(value) % N_val) + N_val) % N_val;
+  drawCycle(N_val, cursor);
+  document.getElementById('result').innerText = `Résultat = ${value.toFixed(2)} → position = ${cursor}`;
+  document.getElementById('log').innerHTML += `Expr: ${exprInput} = ${value.toFixed(2)} | Position: ${cursor}<br>`;
+  document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+}
+
+function clearLog(){ document.getElementById('log').innerHTML=''; }
+function exportLog(){
+  const text = document.getElementById('log').innerText;
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'trace_calcul_djehoutyen.txt';
+  a.click();
+}
+function store(){ memory = cursor; document.getElementById('log').innerHTML += 'M+ : ' + memory + '<br>'; }
+function recall(){ 
+    cursor = memory; 
+    drawCycle(parseInt(document.getElementById('N').value), cursor); 
+    document.getElementById('log').innerHTML += 'MR : ' + cursor + '<br>'; 
+}
+
+window.onload = function() { drawCycle(15, 0); };
+</script>
+</body>
+</html>

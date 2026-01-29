@@ -12,6 +12,7 @@ h2, h3 { color:#9bdcff; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 
 .main-wrapper { max-width: 1100px; margin: 0 auto; }
 .header-section { margin-bottom: 30px; }
 .creator-text { display: block; margin-top: 5px; font-weight: normal; font-size: 0.95rem; opacity: 0.9; }
+.brand-text { display: block; margin-top: 5px; font-size: 0.85rem; color: #9bdcff; opacity: 0.8; }
 .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; text-align: left; }
 .panel { background:#161a33; border-radius:12px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.3); flex: 1 1 450px; min-width: 320px; }
 .controls label { font-size: 0.85rem; font-weight: bold; color: #ffffff; letter-spacing: 0.5px; }
@@ -39,6 +40,7 @@ canvas { background:#0b0f25; border-radius:12px; width: 100%; height: auto; max-
     <p>
         <strong>Calculatrice Djehoutyenne © 2026</strong>
         <span class="creator-text">Créée par Dodji Mahouignito Djehouty OLOU</span>
+        <span class="brand-text">Ordinateur Djéhoutyen® – marque protégée INPI</span>
     </p>
     <div>
       <span class="badge">Prototype logiciel</span>
@@ -89,31 +91,37 @@ let cursor = 0;
 let memory = 0;
 
 function drawCycle(N, pos){
+  if (!canvas || !ctx) return;
+  
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
   const r = 150;
 
+  // Cercle principal
   ctx.strokeStyle = '#4da3ff';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
 
+  // Points du cycle
   for(let i = 0; i < N; i++){
     const a = (2 * Math.PI * i) / N - Math.PI / 2;
     const x = cx + r * Math.cos(a);
     const y = cy + r * Math.sin(a);
     
     if(i === pos) {
+        // Curseur actif
         ctx.fillStyle = '#ff9b4d';
         ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.stroke();
     } else {
+        // Autres points
         ctx.fillStyle = '#9bdcff';
         ctx.beginPath();
         ctx.arc(x, y, 5, 0, Math.PI * 2);
@@ -130,40 +138,62 @@ function evalExpr(expr){
 }
 
 function compute(){
-  const N_val = parseInt(document.getElementById('N').value);
-  const exprInput = document.getElementById('expr').value;
-  if(!exprInput) return;
+  const nInput = document.getElementById('N');
+  const exprInput = document.getElementById('expr');
+  if(!nInput || !exprInput || !exprInput.value) return;
+
+  const N_val = parseInt(nInput.value);
   let value;
   try {
-    value = evalExpr(exprInput);
+    value = evalExpr(exprInput.value);
   } catch(e) {
     alert('Expression invalide.');
     return;
   }
+  
   cursor = ((Math.round(value) % N_val) + N_val) % N_val;
-  drawCycle(N_val, cursor);
+  
+  // Forçage de l'affichage graphique
+  requestAnimationFrame(() => {
+    drawCycle(N_val, cursor);
+  });
+
   document.getElementById('result').innerText = `Résultat = ${value.toFixed(2)} → position = ${cursor}`;
-  document.getElementById('log').innerHTML += `Expr: ${exprInput} = ${value.toFixed(2)} | Position: ${cursor}<br>`;
+  document.getElementById('log').innerHTML += `Expr: ${exprInput.value} = ${value.toFixed(2)} | Position: ${cursor}<br>`;
   document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
 }
 
 function clearLog(){ document.getElementById('log').innerHTML=''; }
+
 function exportLog(){
-  const text = document.getElementById('log').innerText;
+  const log = document.getElementById('log');
+  if(!log) return;
+  const text = log.innerText;
   const blob = new Blob([text], {type:'text/plain'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'trace_calcul_djehoutyen.txt';
   a.click();
 }
-function store(){ memory = cursor; document.getElementById('log').innerHTML += 'M+ : ' + memory + '<br>'; }
-function recall(){ 
-    cursor = memory; 
-    drawCycle(parseInt(document.getElementById('N').value), cursor); 
-    document.getElementById('log').innerHTML += 'MR : ' + cursor + '<br>'; 
+
+function store(){ 
+  memory = cursor; 
+  document.getElementById('log').innerHTML += 'M+ (Stocké) : ' + memory + '<br>'; 
 }
 
-window.onload = function() { drawCycle(15, 0); };
+function recall(){ 
+    const N_val = parseInt(document.getElementById('N').value);
+    cursor = memory; 
+    drawCycle(N_val, cursor); 
+    document.getElementById('log').innerHTML += 'MR (Rappelé) : ' + cursor + '<br>'; 
+}
+
+// Initialisation forcée au chargement
+window.onload = function() {
+    setTimeout(() => {
+        drawCycle(15, 0);
+    }, 100);
+};
 </script>
 </body>
 </html>

@@ -32,8 +32,17 @@
 ---
 
 ## 🌟 Pourquoi c’est révolutionnaire / Why it’s revolutionary
-1. **Première révolution informatique excluant le binaire.**
+
+**FR :**
+1. **Première révolution informatique** excluant le binaire.
 2. **Visualisation dynamique et intuitive** des calculs.
 3. **Compréhension immédiate** du processus mathématique.
 4. **Convient à tous les niveaux** (maternelle → collège et enseignement avancé).
 5. **Protégé à l’INPI :** aucun brevet tiers ne peut être déposé, garantissant la liberté d’usage public.
+
+**EN :**
+1. **First IT revolution** completely excluding binary logic.
+2. **Dynamic and intuitive visualization** of calculations.
+3. **Immediate understanding** of the mathematical process.
+4. **Suitable for all levels** (kindergarten → middle school and advanced education).
+5. **Protected by INPI:** no third-party patent can be filed, ensuring public freedom of use.
